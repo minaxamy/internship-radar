@@ -1,0 +1,45 @@
+import streamlit as st
+import pandas as pd
+import numpy as np
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+import re
+
+st.set_page_config(page_title="Internship Radar", page_icon="🔍")
+
+st.title("🔍 Internship Radar")
+st.write("Paste your resume and a job description to see how well they match!")
+
+col1, col2 = st.columns(2)
+
+with col1:
+    st.subheader("📄 Your Resume")
+    resume = st.text_area("Paste resume here", height=200)
+    
+with col2:
+    st.subheader("📋 Job Description")
+    job = st.text_area("Paste job here", height=200)
+
+if st.button("Analyze Match 🚀"):
+    if resume and job:
+        # Simple match score
+        vectorizer = TfidfVectorizer(stop_words='english')
+        tfidf = vectorizer.fit_transform([resume, job])
+        score = cosine_similarity(tfidf[0:1], tfidf[1:2])[0][0] * 100
+        
+        st.success(f"### Match Score: {score:.1f}%")
+        
+        # Simple keyword extraction
+        skills = ['python', 'java', 'javascript', 'react', 'sql', 'aws', 'docker']
+        resume_skills = [s for s in skills if s in resume.lower()]
+        job_skills = [s for s in skills if s in job.lower()]
+        missing = [s for s in job_skills if s not in resume_skills]
+        
+        if missing:
+            st.warning(f"**Missing skills:** {', '.join(missing)}")
+        else:
+            st.info("Great! You have all the key skills mentioned!")
+    else:
+        st.error("Please paste both resume and job description")
+
+st.caption("Built with Python + Streamlit | TF-IDF + Cosine Similarity")
